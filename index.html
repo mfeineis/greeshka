@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Greeshka Playground</title>
+</head>
+<body>
+    <x-sidebar></x-sidebar>
+    <script src="assets/custom-elements.min.js"></script>
+    <script src="assets/require.development.js"></script>
+    <script>
+        require.config({
+            //baseUrl: "dist",
+            baseUrl: "src",
+        });
+        require(["main"]);
+    </script>
+</body>
+</html>

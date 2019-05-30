@@ -1,0 +1,31 @@
+{
+  "name": "greeshka",
+  "version": "0.3.0",
+  "description": "",
+  "main": "dist/greeshka.js",
+  "scripts": {
+    "start": "serve .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mfeineis/greeshka.git"
+  },
+  "keywords": [
+    "resilient",
+    "scalable",
+    "architecture",
+    "sandbox",
+    "modular",
+    "widget"
+  ],
+  "author": "Martin Feineis",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/mfeineis/greeshka/issues"
+  },
+  "homepage": "https://github.com/mfeineis/greeshka#readme",
+  "devDependencies": {
+    "serve": "^11.0.1"
+  }
+}

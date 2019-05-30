@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Modernoo Playground</title>
+</head>
+<body>
+    <x-sidebar></x-sidebar>
+    <script src="assets/custom-elements.min.js"></script>
+    <script src="assets/require.development.js"></script>
+    <script>
+        require.config({
+            baseUrl: "src",
+        });
+        require(["main"]);
+    </script>
+</body>
+</html>

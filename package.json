@@ -12,7 +12,7 @@
     "lint-staged": "lint-staged",
     "slay-mutants": "true || stryker run",
     "start": "serve .",
-    "test": "jest --coverage && npm run jsdoctest"
+    "test": "jest --coverage"
   },
   "lint-staged": {
     "*.js": [
@@ -62,7 +62,6 @@
     "husky": "^2.3.0",
     "jest": "^24.8.0",
     "lint-staged": "^8.1.7",
-    "mocha": "6",
     "serve": "^11.0.1"
   }
 }

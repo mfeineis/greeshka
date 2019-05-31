@@ -37,10 +37,6 @@
         return Array_slice.call(it, begin, length);
     }
 
-    /**
-     * @example
-     *     greeshka.mix({a:"a"},{b:"b"}) // => {a:"a",b:"b"}
-     */
     function mix(to) {
         const froms = slice(arguments, SKIP_FIRST);
 

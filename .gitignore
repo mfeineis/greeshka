@@ -1,4 +1,5 @@
 .tern-port
+coverage/
 
 # Logs
 logs

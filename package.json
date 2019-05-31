@@ -4,9 +4,32 @@
   "description": "",
   "main": "dist/greeshka.js",
   "scripts": {
+    "cov": "jest --coverage",
+    "guard-commit": "npm run lint-staged",
+    "guard-push": "npm run cov && npm run slay-mutants",
+    "lint": "eslint .",
+    "lint-fix": "eslint --fix .",
+    "lint-staged": "lint-staged",
+    "slay-mutants": "true || stryker run",
     "start": "serve .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --coverage && npm run jsdoctest"
   },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add",
+      "jest --findRelatedTests"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run guard-commit",
+      "pre-push": "npm run guard-push"
+    }
+  },
+  "browserslist": [
+    "ie 11"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mfeineis/greeshka.git"
@@ -26,6 +49,15 @@
   },
   "homepage": "https://github.com/mfeineis/greeshka#readme",
   "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-plugin-compat": "^3.1.1",
+    "eslint-plugin-es5": "^1.3.1",
+    "eslint-plugin-immutable": "^1.0.0",
+    "eslint-plugin-jest": "^22.6.4",
+    "husky": "^2.3.0",
+    "jest": "^24.8.0",
+    "lint-staged": "^8.1.7",
+    "mocha": "6",
     "serve": "^11.0.1"
   }
 }

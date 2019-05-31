@@ -1,29 +1,48 @@
-/* global define, module */
+/* eslint-env amd, node */
 (function (globalThis, base, core) {
     "use strict";
 
     const VERSION = "0.3.0";
+    const NAME = "greeshka";
 
     if (typeof module !== "undefined" && module.exports) {
-        module.exports = core("greeshka", VERSION, base(globalThis, Array, Object), Object);
+        module.exports = core(
+            NAME,
+            VERSION,
+            base(globalThis, Array, Object),
+            Object
+        );
     } else if (typeof define === "function" && define.amd) {
-        define("greeshka", [], function () {
-            return core("greeshka", VERSION, base(globalThis, Array, Object), Object);
+        define(NAME, [], function () {
+            return core(NAME, VERSION, base(globalThis, Array, Object), Object);
         });
     } else {
-        globalThis["greeshka"] = core("greeshka", VERSION, base(globalThis, Array, Object), Object);
+        globalThis[NAME] = core(
+            NAME,
+            VERSION,
+            base(globalThis, Array, Object),
+            Object
+        );
     }
 
-}(self || this || document.documentElement, function base(globalThis, Array, Object) {
+    // eslint-disable-next-line immutable/no-this, max-len, no-undef
+}(typeof self !== "undefined" ? self : this || document.documentElement, function base(globalThis, Array, Object) {
     const Object_hasOwn = Object.prototype.hasOwnProperty;
     const Array_slice = Array.prototype.slice;
+
+    const SKIP_FIRST = 1;
+    const LAST_ITEM = 1;
 
     function slice(it, begin, length) {
         return Array_slice.call(it, begin, length);
     }
 
+    /**
+     * @example
+     *     greeshka.mix({a:"a"},{b:"b"}) // => {a:"a",b:"b"}
+     */
     function mix(to) {
-        const froms = slice(arguments, 1);
+        const froms = slice(arguments, SKIP_FIRST);
 
         froms.forEach(function (from) {
             for (const key in from) {
@@ -42,6 +61,7 @@
 
     // TODO: Provide configurable logging/tracing?
     const log = SUPPORTS_CONSOLE ? function log() {
+        // eslint-disable-next-line no-console
         console.log.apply(console, arguments);
     } : noop;
 
@@ -53,7 +73,7 @@
             last = root;
             root = root[part];
         });
-        last[parts[parts.length - 1]] = it;
+        last[parts[parts.length - LAST_ITEM]] = it;
         return it;
     }
 
@@ -88,7 +108,7 @@
 
         let running = false;
 
-        function core(fn) {
+        function setup(fn) {
             const exports = Object_create(Y);
             const dispose = fn.call(null, exports) || noop;
             Object_keys(exports).forEach(function (key) {
@@ -99,14 +119,13 @@
             //log(fullName, "> core.extension", exports, ">>", coreApi);
         }
 
-        config(core);
+        config(setup);
 
         //log("core.extended, freezing base and core apis...");
         Object_freeze(Sandbox);
         Object_freeze(Sandbox.prototype);
 
         function createSandbox() {
-            //log("createSandbox", ...args, "log", coreApi.log, "Y.mix", coreApi.mix, "Y.slice", coreApi.slice.name);
             return new Sandbox();
         }
 
@@ -126,7 +145,7 @@
             }
         }
 
-        function stop(...args) {
+        function stop() {
             //log("stop", ...args);
             extensions.forEach(function (dispose) {
                 dispose();
@@ -156,7 +175,8 @@
                         return;
                     }
 
-                    registration.dispose = registration.factory.call(null, createSandbox());
+                    registration.dispose =
+                        registration.factory.call(null, createSandbox());
                     registration.running = true;
                 });
                 running = true;

@@ -1,10 +1,4 @@
-define(["greeshka"], function (G) {
-    // jinora
-    // wanshitong
-    // zaheer
-    // asmun
-    // concoct
-    // contraption
+require(["greeshka"], function (G) {
 
     G.log("M", G);
     G().use(function (use) {
@@ -210,7 +204,7 @@ define(["greeshka"], function (G) {
         });
 
         use(function main(Y) {
-            Y.log("imported", M);
+            Y.log("imported", G);
             Y.log("window.Core", Core);
 
             let count = 0;

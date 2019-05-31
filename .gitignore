@@ -1,4 +1,5 @@
 .tern-port
+dist/
 coverage/
 reports/
 

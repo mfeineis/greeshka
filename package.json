@@ -2,8 +2,9 @@
   "name": "greeshka",
   "version": "0.3.0",
   "description": "",
-  "main": "dist/greeshka.js",
+  "main": "src/greeshka.js",
   "scripts": {
+    "build": "cp ./src/greeshka.js ./dist/greeshka.development.js && NODE_ENV=production terser ./src/greeshka.js -o dist/greeshka.js --mangle --compress --mangle-props keep_quoted",
     "cov": "jest --coverage",
     "guard-commit": "npm run lint-staged",
     "guard-push": "npm run cov && npm run slay-mutants",
@@ -62,6 +63,8 @@
     "husky": "^2.3.0",
     "jest": "^24.8.0",
     "lint-staged": "^8.1.7",
-    "serve": "^11.0.1"
-  }
+    "serve": "^11.0.1",
+    "terser": "^4.0.0"
+  },
+  "dependencies": {}
 }

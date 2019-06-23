@@ -97,6 +97,134 @@ require(["greeshka"], function (G) {
 
         });
 
+        add(function workerOffload(Y) {
+            // Inspired by
+            // https://github.com/developit/workerize
+            // https://github.com/WebReflection/workway
+            //
+
+            function hackilyStumbleUponExports(code) {
+                const exports = {};
+                code.replace(/(?:exports|this)\.([\w]+)/g, function (_, name) {
+                    exports[name] = name;
+                });
+                return exports;
+            }
+
+            const slice = [].slice;
+
+            function augment(self, exports) {
+                self.addEventListener("message", function (ev) {
+                    console.log("WORKER.onmessage", ev);
+
+                    function sendResult(result) {
+                        console.log("WORKER.onmessage 'call'", result, "<-", ev.data);
+                        self.postMessage({
+                            id: ev.data.id,
+                            result: result,
+                            type: "RPC.SUCCESS",
+                        });
+                    }
+
+                    function sendError(error) {
+                        console.log("WORKER.onmessage 'error'", error);
+                        self.postMessage({
+                            id: ev.data.id,
+                            result: {
+                                message: error.message,
+                                name: error.name,
+                                stack: error.stack,
+                            },
+                            //result: error,
+                            type: "RPC.ERROR",
+                        });
+                    }
+
+                    if (ev.data.type !== "RPC") {
+                        return;
+                    }
+
+                    try {
+                        const result = exports[ev.data.fn].apply(null, ev.data.args);
+
+                        if (typeof result.then === "function") {
+                            result.then(function (asyncResult) {
+                                sendResult(asyncResult);
+                            }).catch(function (error) {
+                                sendError(error);
+                            });
+                            return;
+                        }
+
+                        sendResult(result);
+                    } catch (error) {
+                        sendError(error);
+                    }
+                });
+            }
+
+            function offload(fn, options) {
+                const fnCode = Function.prototype.toString.call(fn);
+                const code = [
+                    "importScripts(\"https://polyfill.io/v3/polyfill.min.js?flags=gated&features=Promise\");",
+                    "importScripts(\"https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.js\");",
+                    "(function runtime(module) {\"use strict\";",
+                    "(" + fnCode + ").call(module.exports, requirejs, module.exports, module);",
+                    "(" + Function.prototype.toString.call(augment) + "(self, module.exports));",
+                    "}({ exports: {} }));"
+                ].join("\n");
+                console.log("offload\n", code);
+
+                const exports = hackilyStumbleUponExports(fnCode);
+                const url = URL.createObjectURL(new Blob([code]));
+                const worker = new Worker(url, options);
+                const callbacks = {};
+
+                Object.keys(exports).forEach(function (key) {
+                    exports[key] = function () {
+                        const id = "call_" + Date.now() + "_" + (Math.random() * 1000000).toFixed(0);
+                        const promise = new Promise(function (resolve, reject) {
+                            callbacks[id] = {
+                                reject: reject,
+                                resolve: resolve,
+                            };
+                        });
+                        worker.postMessage({
+                            args: slice.call(arguments),
+                            fn: key,
+                            id: id,
+                            type: "RPC",
+                        });
+                        return promise;
+                    };
+                });
+
+                function recv(ev) {
+                    console.log("UI.onmessage", ev);
+                    if (ev.data.type === "RPC.SUCCESS") {
+                        callbacks[ev.data.id].resolve(ev.data.result);
+                        delete callbacks[ev.data.id];
+                        return;
+                    }
+                    if (ev.data.type === "RPC.ERROR") {
+                        const error = new Error(ev.data.result.message);
+                        error.name = ev.data.result.name;
+                        error.stack = ev.data.result.stack;
+
+                        callbacks[ev.data.id].reject(error);
+                        delete callbacks[ev.data.id];
+                        return;
+                    }
+                }
+
+                worker.addEventListener("message", recv);
+                return exports;
+            }
+
+            Y.offload = offload;
+
+        });
+
     });
 
     Core.use(function (use) {
@@ -201,6 +329,50 @@ require(["greeshka"], function (G) {
                     return [view, [button, { onClick: dec }, "-"], count, [button, { onClick: inc }, "+"]];
                 };
             });
+        });
+
+        use(function puttingWorkloadIntoWorker(Y) {
+
+            const lib = Y.offload(function lib(require, exports, module) {
+
+                exports.addSync = function (a, b) {
+                    return a + b;
+                };
+
+                this.add = function (a, b) {
+                    return new Promise(function (resolve) {
+                        require(["https://cdnjs.cloudflare.com/ajax/libs/localforage/1.7.3/localforage.js"], function (storage) {
+                            console.log("fetched localForage", storage);
+                            resolve(a + b);
+                        });
+                    });
+                };
+
+                exports.failSync = function () {
+                    throw new Error("Boom!");
+                };
+
+                this.fail = function () {
+                    return Promise.reject(new Error("Boom!"));
+                };
+
+            });
+
+            Y.log("lib", lib);
+
+            lib.addSync(1, 2).then(function (three) {
+                Y.log("UI worker.addSync.success", three);
+            });
+            lib.add(1, 2).then(function (three) {
+                Y.log("UI worker.add.success", three);
+            });
+            lib.failSync().catch(function (error) {
+                Y.log("[ERROR] UI worker.failSync.error", error);
+            });
+            lib.fail().catch(function (error) {
+                Y.log("[ERROR] UI worker.fail.error", error);
+            });
+
         });
 
         use(function main(Y) {

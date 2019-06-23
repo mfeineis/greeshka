@@ -74,11 +74,11 @@
     }
 
     return {
-        expose: expose,
-        log: log,
-        mix: mix,
-        noop: noop,
-        slice: slice,
+        "expose": expose,
+        "log": log,
+        "mix": mix,
+        "noop": noop,
+        "slice": slice,
     };
 
 }, function core(NAME, VERSION, Y, Object) {
@@ -156,16 +156,17 @@
         }
 
         const api = Object_freeze(mix(add, {
-            log: log,
-            toString: toString,
+            "log": log,
+            "toString": toString,
         }));
 
         const root = Object_freeze({
-            stop: stop,
-            use: function use(fn) {
+            "log": log,
+            "stop": stop,
+            "use": function use(fn) {
                 fn.call(null, api);
 
-                log("start", registrations);
+                log("[greeshka.js:trace] start", registrations);
                 registrations.forEach(function (registration) {
                     if (registration.running) {
                         return;
@@ -187,9 +188,9 @@
     return Object_freeze(mix(function () {
         return init.apply(null, arguments);
     }, {
-        VERSION: VERSION,
-        log: log,
-        toString: toString,
+        "VERSION": VERSION,
+        "log": log,
+        "toString": toString,
     }));
 
 }));

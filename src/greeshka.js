@@ -84,7 +84,6 @@
         "expose": expose,
         "log": log,
         "mix": mix,
-        "noop": noop,
         "slice": slice,
     };
 
@@ -94,7 +93,8 @@
     const Object_keys = Object.keys;
     const log = Y.log;
     const mix = Y.mix;
-    const noop = Y.noop;
+
+    function noop() {}
 
     function toString() {
         return "You are running " + NAME + "@" + VERSION;

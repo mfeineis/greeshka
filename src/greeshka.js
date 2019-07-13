@@ -100,6 +100,12 @@
         return "You are running " + NAME + "@" + VERSION;
     }
 
+    const ERR_EXTENSION_FAILED_TO_START = 1001;
+    const ERR_EXTENSION_FAILED_TO_STOP = 1002;
+    const ERR_REGISTRATION_FAILED_TO_START = 1101;
+    const ERR_REGISTRATION_FAILED_TO_STOP = 1102;
+    const ERR_USE_CALL_FAILED = 1201;
+
     function init(config) {
         config = config || noop;
 
@@ -122,14 +128,26 @@
             //log(fullName, "> core.extension", exports, ">>", coreApi);
         }
 
-        config(setup);
-
-        //log("core.extended, freezing base and core apis...");
-        Object_freeze(Sandbox);
-        Object_freeze(Sandbox.prototype);
+        function logError(code, e) {
+            log.error("[ERR:", code, "]", e);
+        }
 
         function createSandbox() {
             return new Sandbox();
+        }
+
+        function run(registration) {
+            if (registration.running) {
+                return;
+            }
+
+            try {
+                registration.dispose =
+                    registration.factory.call(null, createSandbox());
+                registration.running = true;
+            } catch (e) {
+                logError(ERR_REGISTRATION_FAILED_TO_START, e);
+            }
         }
 
         function add(factory) {
@@ -142,54 +160,69 @@
             registrations.push(registration);
 
             if (running) {
-                // TODO: Error handling for starting modules
-                registration.dispose = factory.call(null, createSandbox());
-                registration.running = true;
+                run(registration);
             }
         }
 
         function stop() {
             //log("stop", ...args);
             extensions.forEach(function (dispose) {
-                dispose();
+                try {
+                    dispose();
+                } catch (e) {
+                    logError(ERR_EXTENSION_FAILED_TO_STOP, e);
+                }
             });
             registrations.forEach(function (registration) {
                 if (registration.dispose) {
-                    registration.dispose();
+                    try {
+                        registration.dispose();
+                    } catch (e) {
+                        logError(ERR_REGISTRATION_FAILED_TO_STOP, e);
+                    }
+                    registration.dispose = null;
                 }
                 registration.running = false;
             });
             //log("stop.done.");
         }
 
-        const api = Object_freeze(mix(add, {
-            "log": log,
-            "toString": toString,
-        }));
+        try {
+            config(setup);
 
-        const root = Object_freeze({
-            "log": log,
-            "stop": stop,
-            "use": function use(fn) {
-                fn.call(null, api);
+            //log("core.extended, freezing base and core apis...");
+            Object_freeze(Sandbox);
+            Object_freeze(Sandbox.prototype);
 
-                log("[greeshka.js:trace] start", registrations);
-                registrations.forEach(function (registration) {
-                    if (registration.running) {
-                        return;
+            const api = Object_freeze(mix(add, {
+                "log": log,
+                "toString": toString,
+            }));
+
+            const root = Object_freeze({
+                "log": log,
+                "stop": stop,
+                "use": function use(fn) {
+                    try {
+                        fn.call(null, api);
+
+                        log("[greeshka.js:trace] start", registrations);
+                        registrations.forEach(run);
+                        running = true;
+
+                    } catch (e) {
+                        logError(ERR_USE_CALL_FAILED, e);
                     }
+                    return root;
+                },
+            });
 
-                    registration.dispose =
-                        registration.factory.call(null, createSandbox());
-                    registration.running = true;
-                });
-                running = true;
+            return root;
+        } catch (e) {
+            logError(ERR_EXTENSION_FAILED_TO_START, e);
+        }
 
-                return root;
-            },
-        });
-
-        return root;
+        return null;
     }
 
     return Object_freeze(mix(function () {

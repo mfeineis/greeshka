@@ -59,10 +59,13 @@
 
     const SUPPORTS_CONSOLE = typeof console !== "undefined";
 
-    // TODO: Provide configurable logging/tracing?
     const log = SUPPORTS_CONSOLE ? function log() {
         // eslint-disable-next-line no-console
         console.log.apply(console, arguments);
+    } : noop;
+    log.error = SUPPORTS_CONSOLE ? function error() {
+        // eslint-disable-next-line no-console
+        console.error.apply(console, arguments);
     } : noop;
 
     function expose(path, it, root) {

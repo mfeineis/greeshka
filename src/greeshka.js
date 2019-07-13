@@ -3,22 +3,26 @@
     "use strict";
 
     const VERSION = "0.3.0";
-    const NAME = "greeshka";
 
     if (typeof module !== "undefined" && module.exports) {
         module.exports = core(
-            NAME,
+            "greeshka",
             VERSION,
             base(globalThis, Array, Object),
             Object
         );
     } else if (typeof define === "function" && define.amd) {
-        define(NAME, [], function () {
-            return core(NAME, VERSION, base(globalThis, Array, Object), Object);
+        define("greeshka", [], function () {
+            return core(
+                "greeshka",
+                VERSION,
+                base(globalThis, Array, Object),
+                Object
+            );
         });
     } else {
-        globalThis[NAME] = core(
-            NAME,
+        globalThis["greeshka"] = core(
+            "greeshka",
             VERSION,
             base(globalThis, Array, Object),
             Object

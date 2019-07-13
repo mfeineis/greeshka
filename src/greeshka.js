@@ -2,7 +2,7 @@
 (function (globalThis, base, core) {
     "use strict";
 
-    const VERSION = "0.3.1";
+    const VERSION = "0.3.2";
 
     if (typeof module !== "undefined" && module.exports) {
         module.exports = core(

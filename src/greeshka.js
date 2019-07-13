@@ -191,7 +191,7 @@
         }
 
         try {
-            config(setup, window);
+            const main = config(setup, window) || noop;
 
             //log("core.extended, freezing base and core apis...");
             Object_freeze(Sandbox);
@@ -220,7 +220,10 @@
                 },
             });
 
+            main(null, Object_create(Y), root);
+
             return root;
+
         } catch (e) {
             logError(ERR_EXTENSION_FAILED_TO_START, e);
         }

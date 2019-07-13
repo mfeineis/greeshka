@@ -225,6 +225,9 @@ require(["greeshka"], function (G) {
 
         });
 
+        return function (_, Y, Core) {
+            Y.expose("Core", Core);
+        };
     });
 
     Core.use(function (use) {

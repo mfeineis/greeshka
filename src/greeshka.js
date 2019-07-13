@@ -8,6 +8,7 @@
         module.exports = core(
             "greeshka",
             VERSION,
+            globalThis,
             base(globalThis, Array, Object),
             Object
         );
@@ -16,6 +17,7 @@
             return core(
                 "greeshka",
                 VERSION,
+                globalThis,
                 base(globalThis, Array, Object),
                 Object
             );
@@ -24,13 +26,14 @@
         globalThis["greeshka"] = core(
             "greeshka",
             VERSION,
+            globalThis,
             base(globalThis, Array, Object),
             Object
         );
     }
 
     // eslint-disable-next-line immutable/no-this, max-len, no-undef
-}(typeof self !== "undefined" ? self : this || document.documentElement, function base(globalThis, Array, Object) {
+}(typeof self !== "undefined" ? self : this || document.documentElement, function base(window, Array, Object) {
     const Object_hasOwn = Object.prototype.hasOwnProperty;
     const Array_slice = Array.prototype.slice;
 
@@ -69,7 +72,7 @@
     } : noop;
 
     function expose(path, it, root) {
-        root = root || globalThis;
+        root = root || window;
         let last = null;
         const parts = path.split(".");
         parts.forEach(function (part) {
@@ -87,7 +90,7 @@
         "slice": slice,
     };
 
-}, function core(NAME, VERSION, Y, Object) {
+}, function core(NAME, VERSION, window, Y, Object) {
     const Object_create = Object.create;
     const Object_freeze = Object.freeze;
     const Object_keys = Object.keys;
@@ -188,7 +191,7 @@
         }
 
         try {
-            config(setup);
+            config(setup, window);
 
             //log("core.extended, freezing base and core apis...");
             Object_freeze(Sandbox);

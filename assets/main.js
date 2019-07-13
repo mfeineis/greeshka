@@ -9,7 +9,7 @@ require(["greeshka"], function (G) {
         });
     }).stop();
 
-    const Core = G(function core(add) {
+    const Core = G(function core(add, window) {
 
         // base(function base$browserFeature(Y) {
         //     Y.BROWSER_FEATURE = 1;

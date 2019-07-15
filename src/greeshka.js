@@ -2,7 +2,7 @@
 (function (globalThis, base, core) {
     "use strict";
 
-    const VERSION = "0.3.2";
+    const VERSION = "0.3.3";
 
     if (typeof module !== "undefined" && module.exports) {
         module.exports = core(
@@ -48,7 +48,7 @@
         const froms = slice(arguments, SKIP_FIRST);
 
         froms.forEach(function (from) {
-            for (const key in from) {
+            for (let key in from) {
                 if (Object_hasOwn.call(from, key)) {
                     to[key] = from[key];
                 }
